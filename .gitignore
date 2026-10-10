@@ -1,0 +1,36 @@
+# Python virtual environment
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Generated reports
+reports/*.json
+
+# Generated baseline data
+data/baselines/*.json
+
+# Local PCAP captures
+data/pcap/*.pcap
+data/pcap/*.pcapng
+
+# Test and coverage cache
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Editor files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
