@@ -167,3 +167,10 @@ Bug reports, suggestions, and improvements are welcome. Run the test suite befor
 ## License
 
 No license has been added yet. Add a suitable license before distributing this project as open-source software.
+
+## Architecture and Demo Evidence
+
+- [System architecture and data flow](docs/architecture.md)
+- [Detection accuracy test report](reports/detection_accuracy_report.md)
+
+The current demonstration uses synthetic traffic. See the report for test scenarios and limitations.
