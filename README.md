@@ -166,7 +166,7 @@ Bug reports, suggestions, and improvements are welcome. Run the test suite befor
 
 ## License
 
-No license has been added yet. Add a suitable license before distributing this project as open-source software.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ## Architecture and Demo Evidence
 
@@ -174,3 +174,4 @@ No license has been added yet. Add a suitable license before distributing this p
 - [Detection accuracy test report](reports/detection_accuracy_report.md)
 
 The current demonstration uses synthetic traffic. See the report for test scenarios and limitations.
+
