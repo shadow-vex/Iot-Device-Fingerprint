@@ -1,4 +1,4 @@
-# Python virtual environment
+﻿# Python virtual environment
 .venv/
 venv/
 env/
@@ -14,6 +14,12 @@ __pycache__/
 
 # Generated reports
 reports/*.json
+!reports/accuracy_tests/
+reports/accuracy_tests/*.json
+!reports/accuracy_tests/anomaly_test.json
+!reports/accuracy_tests/normal_test_1.json
+!reports/accuracy_tests/normal_test_2.json
+!reports/accuracy_tests/normal_test_3.json
 
 # Generated baseline data
 data/baselines/*.json
@@ -34,3 +40,4 @@ htmlcov/
 # OS files
 .DS_Store
 Thumbs.db
+

@@ -1,0 +1,24 @@
+{
+  "pcap_file": "data\\pcap\\sample_anomaly.pcap",
+  "observed_identities": 2,
+  "alert_count": 2,
+  "alerts": [
+    {
+      "time": "2026-10-11T10:05:18.817939+00:00",
+      "severity": "medium",
+      "type": "NEW_PORTS",
+      "mac_address": "02:00:00:00:00:01",
+      "ports": [
+        8080
+      ],
+      "message": "New destination service ports observed compared with baseline."
+    },
+    {
+      "time": "2026-10-11T10:05:18.817984+00:00",
+      "severity": "medium",
+      "type": "UNKNOWN_DEVICE",
+      "mac_address": "02:00:00:00:00:04",
+      "message": "Device MAC was not present in the saved baseline."
+    }
+  ]
+}

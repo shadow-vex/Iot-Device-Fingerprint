@@ -1,0 +1,6 @@
+{
+  "pcap_file": "data\\pcap\\normal_observation_2.pcap",
+  "observed_identities": 2,
+  "alert_count": 0,
+  "alerts": []
+}
