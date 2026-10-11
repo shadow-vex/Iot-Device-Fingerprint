@@ -1,3 +1,4 @@
+
 from collections import Counter, defaultdict
 from hashlib import sha256
 from pathlib import Path
@@ -8,8 +9,11 @@ from scapy.all import PcapReader, Ether, IP, IPv6, TCP, UDP, DNS
 
 def fingerprint_pcap(pcap_path: str) -> list[dict]:
     """
-    Extract observed network characteristics from a PCAP file.
-    These are traffic-based fingerprints, not guaranteed device identities.
+    Extract traffic-based characteristics from a PCAP.
+
+    Ports retains all observed TCP/UDP ports for backward compatibility.
+    Service ports contain destination ports only.
+    These observations do not guarantee a device's identity.
     """
     path = Path(pcap_path)
 
@@ -20,6 +24,8 @@ def fingerprint_pcap(pcap_path: str) -> list[dict]:
         lambda: {
             "protocols": Counter(),
             "ports": Counter(),
+            "service_ports": Counter(),
+            "source_ports": Counter(),
             "packet_count": 0,
             "ip_addresses": set(),
             "dns_queries": set(),
@@ -28,17 +34,16 @@ def fingerprint_pcap(pcap_path: str) -> list[dict]:
 
     with PcapReader(str(path)) as packets:
         for packet in packets:
-            mac_addresses = set()
+            if Ether not in packet or not packet[Ether].src:
+                continue
 
-            if Ether in packet:
-                if packet[Ether].src:
-                    mac_addresses.add(packet[Ether].src.lower())
-                if not mac_addresses:
-                    continue
+            mac = packet[Ether].src.lower()
+            device = devices[mac]
 
             protocols = []
             ip_address = None
-            ports = []
+            source_port = None
+            destination_port = None
             dns_query = None
 
             if IP in packet:
@@ -50,13 +55,21 @@ def fingerprint_pcap(pcap_path: str) -> list[dict]:
 
             if TCP in packet:
                 protocols.append("TCP")
-                ports.append(int(packet[TCP].sport))
-                ports.append(int(packet[TCP].dport))
+                source_port = int(packet[TCP].sport)
+                destination_port = int(packet[TCP].dport)
 
-            if UDP in packet:
+            elif UDP in packet:
                 protocols.append("UDP")
-                ports.append(int(packet[UDP].sport))
-                ports.append(int(packet[UDP].dport))
+                source_port = int(packet[UDP].sport)
+                destination_port = int(packet[UDP].dport)
+
+            if source_port is not None:
+                device["ports"].update([source_port])
+                device["source_ports"].update([source_port])
+
+            if destination_port is not None:
+                device["ports"].update([destination_port])
+                device["service_ports"].update([destination_port])
 
             if DNS in packet and packet[DNS].qd is not None:
                 try:
@@ -69,44 +82,47 @@ def fingerprint_pcap(pcap_path: str) -> list[dict]:
             if not protocols:
                 protocols.append("Other")
 
-            for mac in mac_addresses:
-                device = devices[mac]
-                device["packet_count"] += 1
-                device["protocols"].update(protocols)
-                device["ports"].update(ports)
+            device["packet_count"] += 1
+            device["protocols"].update(protocols)
 
-                if ip_address:
-                    device["ip_addresses"].add(ip_address)
+            if ip_address:
+                device["ip_addresses"].add(ip_address)
 
-                if dns_query:
-                    device["dns_queries"].add(dns_query)
+            if dns_query:
+                device["dns_queries"].add(dns_query)
 
     results = []
 
     for mac, details in sorted(devices.items()):
         protocols = sorted(details["protocols"].keys())
         ports = sorted(details["ports"].keys())
+        service_ports = sorted(details["service_ports"].keys())
+        source_ports = sorted(details["source_ports"].keys())
 
-        # Stable identifier derived from observed MAC + protocol + port set.
         fingerprint_input = json.dumps(
-            {"mac": mac, "protocols": protocols, "ports": ports},
+            {
+                "mac": mac,
+                "protocols": protocols,
+                "service_ports": service_ports,
+            },
             sort_keys=True,
         )
+
         fingerprint_id = sha256(
             fingerprint_input.encode("utf-8")
         ).hexdigest()[:16]
 
-        results.append(
-            {
-                "fingerprint_id": fingerprint_id,
-                "mac_address": mac,
-                "ip_addresses": sorted(details["ip_addresses"]),
-                "protocols": protocols,
-                "ports": ports,
-                "packet_count": details["packet_count"],
-                "dns_queries": sorted(details["dns_queries"]),
-            }
-        )
+        results.append({
+            "fingerprint_id": fingerprint_id,
+            "mac_address": mac,
+            "ip_addresses": sorted(details["ip_addresses"]),
+            "protocols": protocols,
+            "ports": ports,
+            "service_ports": service_ports,
+            "source_ports": source_ports,
+            "packet_count": details["packet_count"],
+            "dns_queries": sorted(details["dns_queries"]),
+        })
 
     return results
 
@@ -135,4 +151,3 @@ if __name__ == "__main__":
 
     print(f"Observed network identities: {len(fingerprints)}")
     print(f"Fingerprint report saved to: {output_path}")
-

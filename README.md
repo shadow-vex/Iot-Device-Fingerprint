@@ -1,218 +1,159 @@
-\# IoT Device Fingerprinter
+﻿# IoT Device Fingerprinter & Behavioral Anomaly Detection
 
+A Python-based IoT cybersecurity prototype that extracts network fingerprints from PCAP files, builds device baselines from repeated observations, and flags unexpected network behavior.
 
+> **Project status:** Prototype. The supplied PCAPs are synthetic test data. Real IoT hardware and real-world attack detection have not yet been validated.
 
-A Python-based IoT cybersecurity prototype that extracts network fingerprints from PCAP files, stores observed device baselines, and flags unexpected network changes.
+## Features
 
+- Extracts network fingerprints from Ethernet traffic.
+- Records MAC addresses, IP addresses, protocols, ports, and DNS queries where present.
+- Separates destination service ports from source ports.
+- Builds baselines from at least three traffic observations.
+- Detects unknown devices and newly observed destination service ports.
+- Flags new IP addresses, protocols, and significant packet-count deviations.
+- Generates JSON reports.
+- Includes automated unit tests.
 
+## Technology Stack
 
-\## Features
+- Python
+- Scapy
+- PCAP / PCAPNG
+- JSON
+- Python `unittest`
 
-
-
-\- Extracts source MAC addresses from Ethernet packets.
-
-\- Records observed IP addresses, protocols, ports, and DNS queries.
-
-\- Saves device fingerprints and baseline data as JSON.
-
-\- Detects previously unseen MAC addresses.
-
-\- Flags newly observed ports and IP addresses.
-
-\- Generates anomaly reports.
-
-\- Includes automated unit tests.
-
-
-
-\## Technology Stack
-
-
-
-\- Python
-
-\- Scapy
-
-\- PCAP / PCAPNG
-
-\- JSON
-
-\- Python unittest
-
-
-
-\## Project Structure
-
-
+## Project Structure
 
 ```text
-
-IoT-Device-Fingerprint/
-
+Iot-Device-Fingerprint/
 ├── data/
-
-│   ├── pcap/
-
-│   └── baselines/
-
+│   ├── baselines/
+│   └── pcap/
 ├── reports/
-
 ├── src/
-
 │   ├── main.py
-
 │   ├── fingerprint.py
-
 │   ├── baseline.py
-
-│   └── anomaly\_detector.py
-
+│   └── anomaly_detector.py
 ├── tests/
-
-│   ├── create\_test\_pcap.py
-
-│   ├── create\_anomaly\_pcap.py
-
-│   └── test\_anomaly\_detector.py
-
+│   ├── anomaly_pcap.py
+│   ├── generate_baseline_observations.py
+│   ├── test_anomaly_detector.py
+│   └── test_pcap.py
 ├── requirements.txt
-
 └── README.md
-
 ```
 
+Generated PCAPs, baseline JSON files, and report JSON files are excluded from Git by `.gitignore`.
 
+## Prerequisites
 
-\## Setup
+- Python installed and available as `python`
+- Git
+- PowerShell on Windows
 
+## Installation
 
+Clone the repository and open the project directory:
+
+```powershell
+git clone https://github.com/shadow-vex/Iot-Device-Fingerprint.git
+cd Iot-Device-Fingerprint
+```
 
 Create and activate a virtual environment:
 
-
-
 ```powershell
-
 python -m venv .venv
-
-.venv\\Scripts\\Activate.ps1
-
+.\.venv\Scripts\Activate.ps1
 ```
-
-
 
 Install dependencies:
 
-
-
 ```powershell
-
 python -m pip install -r requirements.txt
-
 ```
 
+## Generate Synthetic Test Data
 
-
-\## Run the Simulation
-
-
-
-Create sample baseline traffic:
-
-
+Generate three baseline observations:
 
 ```powershell
-
-python tests\\create\_test\_pcap.py
-
+python tests/generate_baseline_observations.py
 ```
 
-
-
-Create the baseline:
-
-
+Generate simulated anomaly traffic:
 
 ```powershell
-
-python src\\main.py --pcap data\\pcap\\sample\_baseline.pcap --mode baseline
-
+python tests/anomaly_pcap.py
 ```
 
+These scripts create synthetic PCAP files for testing; they do not capture real IoT traffic.
 
+## Build a Baseline
 
-Create simulated anomaly traffic:
-
-
+Run:
 
 ```powershell
-
-python tests\\create\_anomaly\_pcap.py
-
+python src/main.py --mode baseline --baseline-pcaps data/pcap/normal_observation_1.pcap data/pcap/normal_observation_2.pcap data/pcap/normal_observation_3.pcap
 ```
 
+Expected output files:
 
+- `data/baselines/baseline.json`
+- `reports/baseline_report.json`
 
-Monitor the simulated traffic:
+## Monitor a Capture
 
-
+After generating the baseline and synthetic anomaly PCAP, run:
 
 ```powershell
-
-python src\\main.py --pcap data\\pcap\\sample\_anomaly.pcap --mode monitor
-
+python src/main.py --mode monitor --pcap data/pcap/sample_anomaly.pcap
 ```
 
+The anomaly report is written to `reports/anomalies.json`.
 
+A detected alert indicates a deviation from the baseline. It does not, by itself, prove an attack occurred.
 
-\## Run Automated Tests
-
-
+## Run Automated Tests
 
 ```powershell
-
-python -m unittest discover -s tests -p "test\_anomaly\_detector.py" -v
-
+python -m unittest discover -s tests -v
 ```
 
+The test suite covers selected anomaly-detection behaviors. Passing tests do not establish real-world detection accuracy.
 
+## Security and Privacy
 
-\## Output Files
+- Capture traffic only on networks you own or are authorized to monitor.
+- PCAPs may contain sensitive network metadata.
+- Review reports before sharing them.
+- MAC addresses can be spoofed or randomized and are not guaranteed device identities.
+- Baseline quality and network variation can affect false-positive rates.
 
+## Limitations
 
+- The included PCAP files are synthetic.
+- Detection is based on baseline comparisons and thresholds; a trained machine-learning model is not currently implemented.
+- Real-device validation, performance benchmarking, and false-positive evaluation remain future work.
 
-\- `data/baselines/baseline.json` — saved baseline.
+## Roadmap
 
-\- `reports/fingerprints.json` — extracted fingerprints.
+- [x] Extract network fingerprints from PCAP files.
+- [x] Build baselines from repeated observations.
+- [x] Detect selected behavioral deviations.
+- [x] Add automated unit tests for core detection logic.
+- [ ] Add GitHub Actions continuous integration.
+- [ ] Expand invalid-PCAP and baseline-validation tests.
+- [ ] Measure detection accuracy and false-positive rates.
+- [ ] Validate with physical IoT hardware.
+- [ ] Explore statistical or machine-learning detection.
 
-\- `reports/anomalies.json` — detected changes.
+## Contributing
 
+Bug reports, suggestions, and improvements are welcome. Run the test suite before submitting changes.
 
+## License
 
-\## Limitations
-
-
-
-This is an early-stage prototype. The included tests use simulated PCAP traffic and do not prove detection of real IoT hardware or real attacks. A MAC address is not a guaranteed device identity. Baseline quality, network capture support, false-positive handling, and real-device validation require further development.
-
-
-
-\## Future Enhancements
-
-
-
-\- Collect repeated observations over time.
-
-\- Measure packet rates and traffic intervals.
-
-\- Add statistical or machine-learning anomaly detection.
-
-\- Build a monitoring dashboard.
-
-\- Validate with physical IoT hardware such as an ESP32.
-
-\- Add more automated tests and deployment documentation.
-
-
-
+No license has been added yet. Add a license file before distributing this project as open-source software.
