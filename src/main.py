@@ -1,5 +1,6 @@
 
 import argparse
+from scapy.error import Scapy_Exception
 import json
 from pathlib import Path
 
@@ -19,6 +20,14 @@ def save_json(data: object, output_path: Path) -> None:
         json.dumps(data, indent=2),
         encoding="utf-8",
     )
+
+
+
+def read_fingerprints_or_error(parser, pcap_path: Path):
+    try:
+        return fingerprint_pcap(str(pcap_path))
+    except (ValueError, Scapy_Exception, OSError) as exc:
+        parser.error(str(exc))
 
 
 def main() -> None:
@@ -61,7 +70,7 @@ def main() -> None:
                 if not pcap_path.is_file():
                     parser.error(f"PCAP file not found: {pcap_path}")
 
-                fingerprints = fingerprint_pcap(str(pcap_path))
+                fingerprints = read_fingerprints_or_error(parser, pcap_path)
 
                 if not fingerprints:
                     parser.error(
@@ -98,7 +107,7 @@ def main() -> None:
         if not pcap_path.is_file():
             parser.error(f"PCAP file not found: {pcap_path}")
 
-        fingerprints = fingerprint_pcap(str(pcap_path))
+        fingerprints = read_fingerprints_or_error(parser, pcap_path)
 
         if not fingerprints:
             parser.error(
@@ -130,7 +139,7 @@ def main() -> None:
         if not pcap_path.is_file():
             parser.error(f"PCAP file not found: {pcap_path}")
 
-        fingerprints = fingerprint_pcap(str(pcap_path))
+        fingerprints = read_fingerprints_or_error(parser, pcap_path)
 
         if not fingerprints:
             parser.error(

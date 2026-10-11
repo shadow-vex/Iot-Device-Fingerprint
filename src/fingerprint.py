@@ -5,6 +5,7 @@ from pathlib import Path
 import json
 
 from scapy.all import PcapReader, Ether, IP, IPv6, TCP, UDP, DNS
+from scapy.error import Scapy_Exception
 
 
 def fingerprint_pcap(pcap_path: str) -> list[dict]:
@@ -32,7 +33,27 @@ def fingerprint_pcap(pcap_path: str) -> list[dict]:
         }
     )
 
-    with PcapReader(str(path)) as packets:
+    try:
+        with path.open("rb") as header_file:
+            magic = header_file.read(4)
+
+        valid_magic_values = (
+            b"\xa1\xb2\xc3\xd4",
+            b"\xd4\xc3\xb2\xa1",
+            b"\xa1\xb2\x3c\x4d",
+            b"\x4d\x3c\xb2\xa1",
+        )
+
+        if magic not in valid_magic_values:
+            raise ValueError(
+                f"Invalid or unreadable PCAP file: {path}"
+            )
+
+        reader = PcapReader(str(path))
+    except (Scapy_Exception, OSError, ValueError) as exc:
+        raise ValueError(f"Invalid or unreadable PCAP file: {path}") from exc
+
+    with reader as packets:
         for packet in packets:
             if Ether not in packet or not packet[Ether].src:
                 continue
