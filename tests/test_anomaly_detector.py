@@ -155,6 +155,36 @@ class TestAnomalyDetector(unittest.TestCase):
             any(a["type"] == "PACKET_COUNT_DEVIATION" for a in alerts)
         )
 
+    def test_new_protocol_is_detected(self):
+        current = [{
+            "mac_address": "02:00:00:00:00:01",
+            "ip_addresses": ["192.168.1.10"],
+            "protocols": ["IPv4", "TCP", "UDP"],
+            "service_ports": [443],
+            "packet_count": 2,
+        }]
+        alerts = detect_anomalies(current, self.baseline)
+        self.assertTrue(any(
+            a["type"] == "NEW_PROTOCOLS"
+            and "UDP" in a.get("protocols", [])
+            for a in alerts
+        ))
+
+    def test_new_ip_address_is_detected(self):
+        current = [{
+            "mac_address": "02:00:00:00:00:01",
+            "ip_addresses": ["192.168.1.10", "192.168.1.25"],
+            "protocols": ["IPv4", "TCP"],
+            "service_ports": [443],
+            "packet_count": 2,
+        }]
+        alerts = detect_anomalies(current, self.baseline)
+        self.assertTrue(any(
+            a["type"] == "NEW_IP_ADDRESS"
+            and "192.168.1.25" in a.get("ip_addresses", [])
+            for a in alerts
+        ))
+
 
 if __name__ == "__main__":
     unittest.main()
