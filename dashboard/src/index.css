@@ -1,0 +1,70 @@
+
+:root {
+  font-family: 'Manrope', 'Segoe UI', sans-serif;
+  color: #f2f2ed;
+  background: #0b0d0f;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  min-width: 320px;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  background: #0b0d0f;
+}
+
+#root {
+  max-width: none;
+  padding: 0;
+  text-align: left;
+  border: 0;
+  display: block;
+}
+
+button {
+  font: inherit;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1,
+h2,
+h3 {
+  color: #f2f2ed;
+}
+
+p {
+  margin-bottom: 0;
+}
+
+svg {
+  flex-shrink: 0;
+}
+
+@media (max-width: 700px) {
+  html,
+  body,
+  #root {
+    width: 100%;
+  }
+}
