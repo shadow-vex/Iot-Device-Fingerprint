@@ -1,75 +1,139 @@
-# React + TypeScript + Vite
+# IoT Device Fingerprinter & Behavioral Anomaly Detection
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A cybersecurity prototype that identifies devices from network traffic, builds behavioral baselines, and flags unexpected activity using rule-based anomaly detection.
 
-Currently, two official plugins are available:
+> **Project status:** Prototype. The included PCAP data is for demonstration and testing. The system has not yet been validated against physical IoT devices or real-world attacks.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Key Features
 
-## React Compiler
+- Extract device fingerprints from PCAP network traffic.
+- Identify devices using MAC addresses and observed IP addresses.
+- Track protocols, DNS queries, and network ports.
+- Build baselines from repeated device observations.
+- Detect unknown devices and unexpected destination service ports.
+- Flag new IP addresses, new protocols, and significant packet-count deviations.
+- Expose fingerprints and anomaly reports through a FastAPI backend.
+- Display device information and alerts in a React dashboard.
+- Run automated tests for core fingerprinting and anomaly-detection logic.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Technology Stack
 
-## Expanding the ESLint configuration
+**Backend and analysis**
+- Python
+- FastAPI
+- Scapy
+- PCAP
+- JSON
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+**Frontend**
+- React
+- TypeScript
+- Vite
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+**Testing**
+- pytest
+- Python unittest
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Architecture
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. **PCAP input:** Network packets are provided through capture files.
+2. **Fingerprinting:** The analysis extracts device and network characteristics.
+3. **Baseline generation:** Repeated observations establish known device behavior.
+4. **Anomaly detection:** Rule-based checks identify deviations from the baseline.
+5. **API:** FastAPI exposes health, report, anomaly, and fingerprint endpoints.
+6. **Dashboard:** React presents device information and detected alerts.
 
+## API Endpoints
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/` | API status |
+| GET | `/api/health` | Health check |
+| GET | `/api/report` | Analysis report |
+| GET | `/api/anomalies` | Anomaly findings |
+| GET | `/api/fingerprints` | Device fingerprints |
+
+Base URL for local development: `http://127.0.0.1:8000`
+
+## Requirements
+
+- Python with a compatible version for the installed dependencies
+- Node.js and npm
+- Git
+
+## Run Locally
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/shadow-vex/Iot-Device-Fingerprint.git
+cd Iot-Device-Fingerprint
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Set up the Python environment
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Windows PowerShell:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
 ```
+
+### 3. Start the backend
+
+From the project root:
+
+```powershell
+python -m uvicorn api_server:app --reload
+```
+
+The API should be available at `http://127.0.0.1:8000`.
+
+### 4. Start the dashboard
+
+Open a second PowerShell terminal:
+
+```powershell
+cd dashboard
+npm install
+npm run dev
+```
+
+Open the local URL printed by Vite in the terminal.
+
+### 5. Run tests
+
+From the project root, with the Python virtual environment activated:
+
+```powershell
+python -m pytest -q
+```
+
+## Current Verification
+
+The development environment has reported:
+- 19 automated tests passing.
+- 8 anomaly-detector tests passing separately.
+- Successful API responses for health, report, anomalies, and fingerprints.
+- Successful TypeScript and Vite production build.
+
+These are development test results, not a claim of real-world detection accuracy.
+
+## Limitations
+
+- Current anomaly detection is rule-based; a trained machine-learning detector has not been verified as part of this implementation.
+- Sample PCAP data is used for demonstration.
+- Physical IoT hardware testing has not yet been completed.
+- Detection results depend on the quality of the captured traffic and baseline data.
+
+## Future Improvements
+
+- Validate detection with physical IoT devices and additional representative traffic.
+- Improve baseline management and detection evaluation.
+- Add documented test datasets and reproducible demonstrations.
+- Evaluate machine-learning approaches against the existing rule-based detector.
+
+## Disclaimer
+
+This project is intended for educational and defensive cybersecurity research. Use only network traffic that you are authorized to inspect.
